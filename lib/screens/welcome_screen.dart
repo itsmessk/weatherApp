@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
+import 'home_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    
+    // If user is already authenticated, redirect to home screen
+    if (authProvider.isAuthenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    }
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -124,6 +136,33 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  
+                  // Error message if any
+                  if (authProvider.error.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 24),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.white),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              authProvider.error,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: () => authProvider.clearError(),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -13,11 +13,16 @@ class AuthService {
   // Sign in with email & password
   Future<UserCredential> signInWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
+      final userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase sign in error: ${e.code} - ${e.message}');
+      rethrow;
     } catch (e) {
+      debugPrint('Unexpected sign in error: $e');
       rethrow;
     }
   }
@@ -25,11 +30,16 @@ class AuthService {
   // Register with email & password
   Future<UserCredential> registerWithEmailAndPassword(String email, String password) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase registration error: ${e.code} - ${e.message}');
+      rethrow;
     } catch (e) {
+      debugPrint('Unexpected registration error: $e');
       rethrow;
     }
   }
@@ -37,8 +47,9 @@ class AuthService {
   // Sign out
   Future<void> signOut() async {
     try {
-      return await _auth.signOut();
+      await _auth.signOut();
     } catch (e) {
+      debugPrint('Sign out error: $e');
       rethrow;
     }
   }
@@ -46,14 +57,20 @@ class AuthService {
   // Reset password
   Future<void> resetPassword(String email) async {
     try {
-      return await _auth.sendPasswordResetEmail(email: email);
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase reset password error: ${e.code} - ${e.message}');
+      rethrow;
     } catch (e) {
+      debugPrint('Unexpected reset password error: $e');
       rethrow;
     }
   }
 
   // Get error message from Firebase error code
   String getMessageFromErrorCode(FirebaseAuthException error) {
+    debugPrint('Handling Firebase error code: ${error.code}');
+    
     switch (error.code) {
       case "invalid-email":
         return "Your email address appears to be malformed.";
@@ -71,8 +88,14 @@ class AuthService {
         return "An account already exists for this email.";
       case "weak-password":
         return "Password should be at least 6 characters.";
+      case "network-request-failed":
+        return "Network error. Check your internet connection.";
+      case "invalid-credential":
+        return "The credential is malformed or has expired.";
+      case "account-exists-with-different-credential":
+        return "An account already exists with the same email address but different sign-in credentials.";
       default:
-        return "An undefined error occurred.";
+        return error.message ?? "An undefined error occurred.";
     }
   }
 }

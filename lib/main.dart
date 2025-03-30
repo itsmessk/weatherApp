@@ -11,14 +11,20 @@ import 'screens/home_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/profile_screen.dart';
 
-void main() async {
+Future<void> main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('Error initializing Firebase: $e');
+    // Continue with the app even if Firebase fails to initialize
+  }
   
   // Set preferred orientations
   SystemChrome.setPreferredOrientations([
@@ -60,7 +66,7 @@ class _MyAppState extends State<MyApp> {
             title: 'Weather App',
             debugShowCheckedModeBanner: false,
             theme: themeProvider.themeData,
-            initialRoute: authProvider.isAuthenticated ? '/home' : '/welcome',
+            initialRoute: '/welcome', // Always start with welcome screen
             routes: {
               '/welcome': (context) => const WelcomeScreen(),
               '/home': (context) => const HomeScreen(),

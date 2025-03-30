@@ -18,10 +18,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void _init() {
-    _authService.authStateChanges.listen((User? user) {
-      _user = user;
-      notifyListeners();
-    });
+    try {
+      _authService.authStateChanges.listen((User? user) {
+        _user = user;
+        notifyListeners();
+      });
+    } catch (e) {
+      _handleError("Error initializing auth state: $e");
+    }
   }
 
   Future<bool> signIn(String email, String password) async {
