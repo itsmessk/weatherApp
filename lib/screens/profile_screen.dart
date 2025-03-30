@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/custom_app_bar.dart';
@@ -168,13 +169,17 @@ class ProfileScreen extends StatelessWidget {
                     ListTile(
                       leading: const Icon(Icons.info_outline),
                       title: const Text('Version'),
-                      trailing: const Text('1.0.0'),
+                      trailing: const Text('0.0.1'),
                     ),
                     const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.code),
                       title: const Text('Developer'),
-                      trailing: const Text('Weather App Team'),
+                      subtitle: const Text('@itsmessk'),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                      launchUrl(Uri.parse('https://github.com/itsmessk'));
+                      },
                     ),
                   ],
                 ),
