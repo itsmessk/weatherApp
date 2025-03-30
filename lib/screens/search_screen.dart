@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/weather_provider.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/custom_app_bar.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -97,8 +98,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Location'),
+      appBar: CustomAppBar(
+        title: 'Search Location',
         elevation: 0,
       ),
       body: GestureDetector(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
+import '../widgets/custom_app_bar.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -12,8 +13,8 @@ class ProfileScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
+      appBar: CustomAppBar(
+        title: 'Profile',
       ),
       body: SingleChildScrollView(
         child: Padding(

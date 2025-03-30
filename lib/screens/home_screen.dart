@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../widgets/weather_card.dart';
 import '../widgets/forecast_card.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/custom_app_bar.dart';
 import 'favorites_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
@@ -77,8 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Weather App'),
+      appBar: CustomAppBar(
+        title: 'Weather App',
         actions: [
           // Refresh button
           IconButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/weather_provider.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/custom_app_bar.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -23,8 +24,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favorite Locations'),
+      appBar: CustomAppBar(
+        title: 'Favorite Locations',
         elevation: 0,
       ),
       body: Container(
