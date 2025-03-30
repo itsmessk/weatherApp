@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/weather.dart';
 
 class WeatherService {
-  final String _apiKey = 'YOUR_OPENWEATHERMAP_API_KEY'; // Replace with your API key
+  final String _apiKey = '265a201ea8f1e2290163007bb5a9ce69'; // Replace with your API key
   final String _baseUrl = 'https://api.openweathermap.org/data/2.5';
   final http.Client _client = http.Client();
 

@@ -28,7 +28,7 @@ class WeatherIcon extends StatelessWidget {
       return Icons.wb_sunny;
     } else if (lowercaseCondition.contains('cloud')) {
       if (lowercaseCondition.contains('scattered') || lowercaseCondition.contains('few')) {
-        return Icons.partly_cloudy_day;
+        return Icons.cloud_outlined;
       }
       return Icons.cloud;
     } else if (lowercaseCondition.contains('rain')) {
