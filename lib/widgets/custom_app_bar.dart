@@ -38,10 +38,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.wb_sunny,
-              color: Colors.amber,
-              size: 28,
+            Stack(
+              children: [
+                Positioned(
+                  right: 0,
+                  child: Icon(
+                    Icons.cloud,
+                    color: Colors.white.withOpacity(0.9),
+                    size: 24,
+                  ),
+                ),
+                Icon(
+                  Icons.wb_sunny,
+                  color: Colors.amber,
+                  size: 28,
+                ),
+              ],
             ),
             const SizedBox(width: 10),
             Text(
@@ -64,10 +76,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
         centerTitle: centerTitle,
-        backgroundColor: backgroundColor ?? theme.primaryColor,
-        foregroundColor: foregroundColor ?? theme.colorScheme.onPrimary,
-        elevation: elevation,
-        shape: null,
+        backgroundColor: Colors.transparent,
+        foregroundColor: foregroundColor ?? Colors.white,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(20),
+          ),
+        ),
         actions: actions,
         leading: leading,
         flexibleSpace: Container(
