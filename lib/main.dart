@@ -12,6 +12,7 @@ import 'screens/welcome_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/favorites_screen.dart';
 import 'screens/search_screen.dart';
+import 'screens/settings_screen.dart';
 
 Future<void> main() async {
   // Ensure Flutter is initialized
@@ -65,7 +66,7 @@ class _MyAppState extends State<MyApp> {
       child: Consumer2<ThemeProvider, AuthProvider>(
         builder: (context, themeProvider, authProvider, child) {
           return MaterialApp(
-            title: 'Weather App',
+            title: 'வானிலை 24x7',
             debugShowCheckedModeBanner: false,
             theme: themeProvider.themeData,
             initialRoute: '/welcome', // Always start with welcome screen
@@ -75,6 +76,7 @@ class _MyAppState extends State<MyApp> {
               '/profile': (context) => const ProfileScreen(),
               '/favorites': (context) => const FavoritesScreen(),
               '/search': (context) => const SearchScreen(),
+              '/settings': (context) => const SettingsScreen(),
             },
           );
         },

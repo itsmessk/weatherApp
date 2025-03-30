@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Weather App',
+        title: 'வானிலை 24x7',
         actions: [
           // Refresh button
           IconButton(
