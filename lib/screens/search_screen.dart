@@ -243,9 +243,19 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: const WeatherNavigationBar(
+      bottomNavigationBar: WeatherNavigationBar(
         currentIndex: 1,
-        onTap: null, // We handle navigation in the parent screen
+        onTap: (index) {
+          if (index == 1) return; // Already on search screen
+          
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/home');
+          } else if (index == 2) {
+            Navigator.pushReplacementNamed(context, '/favorites');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/profile');
+          }
+        },
       ),
     );
   }

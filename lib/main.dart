@@ -10,6 +10,8 @@ import 'services/weather_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/favorites_screen.dart';
+import 'screens/search_screen.dart';
 
 Future<void> main() async {
   // Ensure Flutter is initialized
@@ -71,6 +73,8 @@ class _MyAppState extends State<MyApp> {
               '/welcome': (context) => const WelcomeScreen(),
               '/home': (context) => const HomeScreen(),
               '/profile': (context) => const ProfileScreen(),
+              '/favorites': (context) => const FavoritesScreen(),
+              '/search': (context) => const SearchScreen(),
             },
           );
         },

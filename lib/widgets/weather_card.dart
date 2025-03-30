@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/weather_model.dart';
+import '../models/weather.dart';
 import '../providers/weather_provider.dart';
 
 class WeatherCard extends StatelessWidget {
-  final WeatherModel weather;
+  final Weather weather;
   final VoidCallback onFavoriteToggle;
 
   const WeatherCard({
@@ -16,6 +16,7 @@ class WeatherCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weatherProvider = Provider.of<WeatherProvider>(context);
+    final isFavorite = weatherProvider.isCityInFavorites(weatherProvider.currentCity);
 
     return Card(
       elevation: 4,
@@ -30,33 +31,35 @@ class WeatherCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // City name and country
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      weather.cityName,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    Text(
-                      weather.country,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-                // Favorite button
-                FutureBuilder<bool>(
-                  future: weatherProvider.isCityFavorite(weather.cityName),
-                  builder: (context, snapshot) {
-                    final isFavorite = snapshot.data ?? false;
-                    return IconButton(
-                      icon: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : null,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        weatherProvider.currentCity,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      onPressed: onFavoriteToggle,
-                    );
-                  },
+                      const SizedBox(height: 4),
+                      Text(
+                        weather.condition,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : null,
+                  ),
+                  onPressed: onFavoriteToggle,
                 ),
               ],
             ),
@@ -64,51 +67,90 @@ class WeatherCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Temperature and condition
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${weather.temperature.toStringAsFixed(1)}°C',
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
-                    Text(
-                      weather.condition,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ],
-                ),
-                // Weather icon
-                Image.network(
-                  'https:${weather.conditionIcon}',
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.contain,
-                  cacheWidth: 160,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.0,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.cloud,
-                      size: 80,
-                    );
-                  },
-                ),
+                _buildTemperatureDisplay(context),
+                _buildWeatherIcon(),
               ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildTemperatureDisplay(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              weather.temperature.toStringAsFixed(1),
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              '°C',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          'Feels like ${weather.feelsLike.toStringAsFixed(1)}°C',
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeatherIcon() {
+    IconData iconData;
+    
+    // Determine icon based on weather condition
+    final condition = weather.condition.toLowerCase();
+    if (condition.contains('clear') || condition.contains('sunny')) {
+      iconData = Icons.wb_sunny;
+    } else if (condition.contains('cloud')) {
+      iconData = Icons.cloud;
+    } else if (condition.contains('rain')) {
+      iconData = Icons.water_drop;
+    } else if (condition.contains('storm') || condition.contains('thunder')) {
+      iconData = Icons.flash_on;
+    } else if (condition.contains('snow')) {
+      iconData = Icons.ac_unit;
+    } else if (condition.contains('mist') || condition.contains('fog')) {
+      iconData = Icons.cloud_queue;
+    } else {
+      iconData = Icons.wb_sunny_outlined;
+    }
+    
+    return Icon(
+      iconData,
+      size: 80,
+      color: _getIconColor(condition),
+    );
+  }
+
+  Color _getIconColor(String condition) {
+    if (condition.contains('clear') || condition.contains('sunny')) {
+      return Colors.orange;
+    } else if (condition.contains('cloud')) {
+      return Colors.grey;
+    } else if (condition.contains('rain')) {
+      return Colors.blue;
+    } else if (condition.contains('storm') || condition.contains('thunder')) {
+      return Colors.deepPurple;
+    } else if (condition.contains('snow')) {
+      return Colors.lightBlue;
+    } else {
+      return Colors.orange;
+    }
   }
 }

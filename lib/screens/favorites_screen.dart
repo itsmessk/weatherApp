@@ -54,9 +54,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           },
         ),
       ),
-      bottomNavigationBar: const WeatherNavigationBar(
+      bottomNavigationBar: WeatherNavigationBar(
         currentIndex: 2,
-        onTap: null, // We handle navigation in the parent screen
+        onTap: (index) {
+          if (index == 2) return; // Already on favorites screen
+          
+          if (index == 0) {
+            Navigator.pushReplacementNamed(context, '/home');
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(context, '/search');
+          } else if (index == 3) {
+            Navigator.pushReplacementNamed(context, '/profile');
+          }
+        },
       ),
     );
   }
