@@ -3,10 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../services/weather_service.dart';
+import '../services/user_preferences_service.dart';
 import '../models/weather.dart';
 
 class WeatherProvider extends ChangeNotifier {
   final WeatherService _weatherService = WeatherService();
+  final UserPreferencesService _preferencesService = UserPreferencesService();
   Weather? _currentWeather;
   List<Weather> _forecast = [];
   String _currentCity = '';
@@ -99,42 +101,70 @@ class WeatherProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      _favorites = prefs.getStringList('favorites') ?? [];
-      _isLoadingFavorites = false;
-      notifyListeners();
+      if (_preferencesService.isUserLoggedIn) {
+        // Load favorites from Firestore if user is logged in
+        _favorites = await _preferencesService.getFavoriteCities();
+      } else {
+        // Fall back to shared preferences if user is not logged in
+        final prefs = await SharedPreferences.getInstance();
+        _favorites = prefs.getStringList('favorites') ?? [];
+      }
     } catch (e) {
-      debugPrint('Error loading favorites: $e');
+      print('Error loading favorites: $e');
+    } finally {
       _isLoadingFavorites = false;
       notifyListeners();
     }
   }
 
   Future<void> addToFavorites(String city) async {
-    if (city.isEmpty) return;
+    if (!_favorites.contains(city)) {
+      _favorites.add(city);
+      notifyListeners();
 
-    try {
-      if (!_favorites.contains(city)) {
-        _favorites.add(city);
-        await _saveFavorites();
+      try {
+        if (_preferencesService.isUserLoggedIn) {
+          // Save to Firestore if user is logged in
+          await _preferencesService.addFavoriteCity(city);
+        } else {
+          // Fall back to shared preferences if user is not logged in
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setStringList('favorites', _favorites);
+        }
+      } catch (e) {
+        print('Error adding to favorites: $e');
       }
-    } catch (e) {
-      debugPrint('Error adding to favorites: $e');
     }
   }
 
   Future<void> removeFromFavorites(String city) async {
-    try {
+    if (_favorites.contains(city)) {
       _favorites.remove(city);
-      await _saveFavorites();
-    } catch (e) {
-      debugPrint('Error removing from favorites: $e');
+      notifyListeners();
+
+      try {
+        if (_preferencesService.isUserLoggedIn) {
+          // Remove from Firestore if user is logged in
+          await _preferencesService.removeFavoriteCity(city);
+        } else {
+          // Fall back to shared preferences if user is not logged in
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setStringList('favorites', _favorites);
+        }
+      } catch (e) {
+        print('Error removing from favorites: $e');
+      }
     }
   }
 
   Future<bool> isCityFavorite(String city) async {
-    await loadFavorites();
-    return _favorites.contains(city);
+    if (_preferencesService.isUserLoggedIn) {
+      // Check in Firestore if user is logged in
+      return await _preferencesService.isCityInFavorites(city);
+    } else {
+      // Check in local favorites if user is not logged in
+      return _favorites.contains(city);
+    }
   }
 
   bool isCityInFavorites(String city) {
@@ -147,7 +177,7 @@ class WeatherProvider extends ChangeNotifier {
       await prefs.setStringList('favorites', _favorites);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error saving favorites: $e');
+      print('Error saving favorites: $e');
     }
   }
 

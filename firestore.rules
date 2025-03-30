@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if the user is accessing their own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Match the users collection
+    match /users/{userId} {
+      // Allow read and write if the user is authenticated and is the owner
+      allow read, write: if isOwner(userId);
+      
+      // Match the preferences subcollection
+      match /preferences/{document=**} {
+        allow read, write: if isOwner(userId);
+        
+        // Validate the structure of the general preferences document
+        match /general {
+          allow create, update: if isOwner(userId) && 
+            request.resource.data.keys().hasAll(['temperatureUnit', 'windSpeedUnit', 'theme', 'lastUpdated']) &&
+            (request.resource.data.temperatureUnit == 'celsius' || request.resource.data.temperatureUnit == 'fahrenheit') &&
+            (request.resource.data.windSpeedUnit == 'kmh' || request.resource.data.windSpeedUnit == 'mph') &&
+            (request.resource.data.theme == 'light' || request.resource.data.theme == 'dark' || request.resource.data.theme == 'system');
+        }
+      }
+      
+      // Match the favoriteCities subcollection
+      match /favoriteCities/{cityName} {
+        allow read, write: if isOwner(userId);
+        
+        // Validate the structure of the info document
+        match /info {
+          allow create, update: if isOwner(userId) && 
+            request.resource.data.keys().hasAll(['count', 'lastUpdated']) &&
+            request.resource.data.count is number;
+        }
+      }
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

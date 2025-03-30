@@ -1,9 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../services/user_preferences_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final UserPreferencesService _preferencesService = UserPreferencesService();
   User? _user;
   bool _isLoading = false;
   String _error = '';
@@ -22,6 +24,11 @@ class AuthProvider extends ChangeNotifier {
       _authService.authStateChanges.listen((User? user) {
         _user = user;
         notifyListeners();
+        
+        // Initialize user preferences when user logs in
+        if (user != null) {
+          _preferencesService.initializeUserPreferences();
+        }
       });
     } catch (e) {
       _handleError("Error initializing auth state: $e");
@@ -35,6 +42,12 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _authService.signInWithEmailAndPassword(email, password);
       _setLoading(false);
+      
+      // Initialize user preferences
+      if (_user != null) {
+        await _preferencesService.initializeUserPreferences();
+      }
+      
       return true;
     } on FirebaseAuthException catch (e) {
       _handleError(_authService.getMessageFromErrorCode(e));
@@ -52,6 +65,12 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _authService.registerWithEmailAndPassword(email, password);
       _setLoading(false);
+      
+      // Initialize user preferences for new user
+      if (_user != null) {
+        await _preferencesService.initializeUserPreferences();
+      }
+      
       return true;
     } on FirebaseAuthException catch (e) {
       _handleError(_authService.getMessageFromErrorCode(e));

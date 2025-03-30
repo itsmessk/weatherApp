@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'providers/theme_provider.dart';
 import 'providers/weather_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/user_preferences_provider.dart';
 import 'services/weather_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -35,7 +36,17 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => WeatherProvider()),
+        ChangeNotifierProvider(create: (_) => UserPreferencesProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
@@ -57,30 +68,23 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => WeatherProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-      ],
-      child: Consumer2<ThemeProvider, AuthProvider>(
-        builder: (context, themeProvider, authProvider, child) {
-          return MaterialApp(
-            title: 'வானிலை 24x7',
-            debugShowCheckedModeBanner: false,
-            theme: themeProvider.themeData,
-            initialRoute: '/welcome', // Always start with welcome screen
-            routes: {
-              '/welcome': (context) => const WelcomeScreen(),
-              '/home': (context) => const HomeScreen(),
-              '/profile': (context) => const ProfileScreen(),
-              '/favorites': (context) => const FavoritesScreen(),
-              '/search': (context) => const SearchScreen(),
-              '/settings': (context) => const SettingsScreen(),
-            },
-          );
-        },
-      ),
+    return Consumer2<ThemeProvider, AuthProvider>(
+      builder: (context, themeProvider, authProvider, child) {
+        return MaterialApp(
+          title: 'வானிலை 24x7',
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.themeData,
+          initialRoute: '/welcome', // Always start with welcome screen
+          routes: {
+            '/welcome': (context) => const WelcomeScreen(),
+            '/home': (context) => const HomeScreen(),
+            '/profile': (context) => const ProfileScreen(),
+            '/favorites': (context) => const FavoritesScreen(),
+            '/search': (context) => const SearchScreen(),
+            '/settings': (context) => const SettingsScreen(),
+          },
+        );
+      },
     );
   }
 }
