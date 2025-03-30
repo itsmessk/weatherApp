@@ -360,12 +360,10 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
   }
 
   Widget _buildHourlyForecastSection(WeatherProvider weatherProvider) {
-    final hourlyForecast = weatherProvider.forecast.take(24).toList();
-    
-    if (hourlyForecast.isEmpty) {
+    if (weatherProvider.forecast.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -381,19 +379,27 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: hourlyForecast.length,
+            itemCount: weatherProvider.forecast.length.clamp(0, 24),
             itemBuilder: (context, index) {
-              final forecast = hourlyForecast[index];
+              final forecast = weatherProvider.forecast[index];
               final time = DateFormat('HH:mm').format(forecast.lastUpdated);
               
-              return Card(
-                margin: const EdgeInsets.only(right: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
                 child: Container(
                   width: 80,
-                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -601,13 +607,15 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
                   _buildInfoRow(
                     icon: Icons.umbrella,
                     title: 'Precipitation',
-                    value: '${(weather.humidity - 60) / 2} mm',
+                    value: '${((weather.humidity - 60) / 2).toStringAsFixed(1)} mm',
                   ),
                 ],
               ],
             ),
           ),
         ),
+        // Add padding at the bottom to prevent overflow
+        const SizedBox(height: 50),
       ],
     );
   }
@@ -623,20 +631,23 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
         children: [
           Icon(icon, size: 22, color: Theme.of(context).primaryColor),
           const SizedBox(width: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           Text(
             value,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
