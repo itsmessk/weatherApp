@@ -1,9 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/weather_provider.dart';
+import '../widgets/navigation_bar.dart';
+import 'home_screen.dart';
+import 'search_screen.dart';
+import 'profile_screen.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  int _currentIndex = 2; // Set to 2 for favorites tab
+
+  void _onNavBarTap(int index) {
+    if (index == _currentIndex) return;
+    
+    switch (index) {
+      case 0:
+        // Navigate to home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+        break;
+      case 1:
+        // Navigate to search screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchScreen()),
+        );
+        break;
+      case 2:
+        // Already on favorites screen, do nothing
+        break;
+      case 3:
+        // Navigate to profile screen
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,13 +112,20 @@ class FavoritesScreen extends StatelessWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       weatherProvider.searchCity(city).then((_) {
-                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        );
                       });
                     },
                   ),
                 );
               },
             ),
+      bottomNavigationBar: WeatherNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onNavBarTap,
+      ),
     );
   }
 }

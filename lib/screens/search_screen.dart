@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/weather_provider.dart';
+import '../widgets/navigation_bar.dart';
+import 'home_screen.dart';
+import 'favorites_screen.dart';
+import 'profile_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -12,6 +16,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  int _currentIndex = 1; // Set to 1 for search tab
   
   @override
   void initState() {
@@ -27,6 +32,34 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onNavBarTap(int index) {
+    if (index == _currentIndex) return;
+    
+    switch (index) {
+      case 0:
+        // Navigate to home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+        break;
+      case 1:
+        // Already on search screen, do nothing
+        break;
+      case 2:
+        // Navigate to favorites screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+        );
+        break;
+      case 3:
+        // Navigate to profile screen
+        Navigator.pushReplacementNamed(context, '/profile');
+        break;
+    }
   }
 
   @override
@@ -141,6 +174,10 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: WeatherNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onNavBarTap,
+      ),
     );
   }
 
@@ -165,7 +202,10 @@ class _SearchScreenState extends State<SearchScreen> {
         .then((_) {
       // Navigate back to home screen if successful
       if (Provider.of<WeatherProvider>(context, listen: false).error.isEmpty) {
-        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
       }
     });
   }

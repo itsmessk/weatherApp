@@ -4,12 +4,14 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import '../providers/weather_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/weather_card.dart';
 import '../widgets/forecast_card.dart';
 import '../widgets/navigation_bar.dart';
 import 'favorites_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -20,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  final List<Widget> _screens = [];
 
   @override
   void initState() {
@@ -42,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     switch (index) {
       case 0:
-        // Already on home screen, do nothing
+        // Already on home screen, just update the index
         setState(() => _currentIndex = index);
         break;
       case 1:
@@ -59,6 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (context) => const FavoritesScreen()),
         ).then((_) => setState(() => _currentIndex = 0));
         break;
+      case 3:
+        // Navigate to profile screen
+        Navigator.pushNamed(context, '/profile')
+            .then((_) => setState(() => _currentIndex = 0));
+        break;
     }
   }
 
@@ -66,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final weatherProvider = Provider.of<WeatherProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -167,6 +176,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // User greeting if authenticated
+                              if (authProvider.isAuthenticated) ...[
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Text(
+                                    'Hello, ${authProvider.user?.email?.split('@').first ?? 'User'}!',
+                                    style: Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                ),
+                              ],
+                              
                               // Current weather card
                               WeatherCard(
                                 weather: weatherProvider.currentWeather!,

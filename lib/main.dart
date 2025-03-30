@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'providers/theme_provider.dart';
 import 'providers/weather_provider.dart';
+import 'providers/auth_provider.dart';
 import 'services/weather_service.dart';
 import 'screens/home_screen.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/profile_screen.dart';
 
-void main() {
+void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Set preferred orientations
   SystemChrome.setPreferredOrientations([
@@ -42,14 +52,20 @@ class _MyAppState extends State<MyApp> {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => WeatherProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      child: Consumer2<ThemeProvider, AuthProvider>(
+        builder: (context, themeProvider, authProvider, child) {
           return MaterialApp(
             title: 'Weather App',
             debugShowCheckedModeBanner: false,
             theme: themeProvider.themeData,
-            home: const HomeScreen(),
+            initialRoute: authProvider.isAuthenticated ? '/home' : '/welcome',
+            routes: {
+              '/welcome': (context) => const WelcomeScreen(),
+              '/home': (context) => const HomeScreen(),
+              '/profile': (context) => const ProfileScreen(),
+            },
           );
         },
       ),
