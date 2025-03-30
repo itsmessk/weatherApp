@@ -6,8 +6,10 @@ import '../providers/weather_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/weather_card.dart';
 import '../widgets/forecast_card.dart';
+import '../widgets/navigation_bar.dart';
 import 'favorites_screen.dart';
 import 'search_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,6 +19,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +37,31 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _onNavBarTap(int index) {
+    if (index == _currentIndex) return;
+    
+    switch (index) {
+      case 0:
+        // Already on home screen, do nothing
+        setState(() => _currentIndex = index);
+        break;
+      case 1:
+        // Navigate to search screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchScreen()),
+        ).then((_) => setState(() => _currentIndex = 0));
+        break;
+      case 2:
+        // Navigate to favorites screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+        ).then((_) => setState(() => _currentIndex = 0));
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final weatherProvider = Provider.of<WeatherProvider>(context);
@@ -42,23 +71,26 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Weather App'),
         actions: [
-          // Search button
+          // Refresh button
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh weather data',
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SearchScreen()),
-              );
+              if (weatherProvider.currentCity.isNotEmpty) {
+                weatherProvider.searchCity(weatherProvider.currentCity);
+              } else {
+                weatherProvider.getCurrentLocationWeather();
+              }
             },
           ),
-          // Favorites button
+          // Settings button
           IconButton(
-            icon: const Icon(Icons.favorite),
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
@@ -67,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(
               themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
             ),
+            tooltip: 'Toggle theme',
             onPressed: () {
               themeProvider.toggleTheme();
             },
@@ -207,6 +240,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+      bottomNavigationBar: WeatherNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: _onNavBarTap,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (weatherProvider.currentCity.isNotEmpty) {
+            weatherProvider.searchCity(weatherProvider.currentCity);
+          } else {
+            weatherProvider.getCurrentLocationWeather();
+          }
+        },
+        tooltip: 'Refresh',
+        child: const Icon(Icons.refresh),
+      ),
     );
   }
 
