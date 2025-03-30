@@ -92,17 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
           ),
-          // Settings button
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
           // Theme toggle button
           IconButton(
             icon: Icon(

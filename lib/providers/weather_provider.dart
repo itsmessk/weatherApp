@@ -1,152 +1,153 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import '../models/weather_model.dart';
 import '../services/weather_service.dart';
-import '../services/storage_service.dart';
+import '../models/weather.dart';
 
 class WeatherProvider extends ChangeNotifier {
   final WeatherService _weatherService = WeatherService();
-  final StorageService _storageService = StorageService();
-  
-  WeatherModel? _currentWeather;
-  List<WeatherModel> _forecast = [];
-  List<String> _favoriteCities = [];
+  Weather? _currentWeather;
+  List<Weather> _forecast = [];
   String _currentCity = '';
   bool _isLoading = false;
+  bool _isLoadingFavorites = false;
   String _error = '';
-  
-  WeatherModel? get currentWeather => _currentWeather;
-  List<WeatherModel> get forecast => _forecast;
-  List<String> get favoriteCities => _favoriteCities;
+  List<String> _favorites = [];
+
+  Weather? get currentWeather => _currentWeather;
+  List<Weather> get forecast => _forecast;
   String get currentCity => _currentCity;
   bool get isLoading => _isLoading;
+  bool get isLoadingFavorites => _isLoadingFavorites;
   String get error => _error;
+  List<String> get favorites => _favorites;
 
   WeatherProvider() {
-    _loadFavoriteCities();
-  }
-
-  Future<void> _loadFavoriteCities() async {
-    _favoriteCities = await _storageService.getFavoriteCities();
-    notifyListeners();
-  }
-
-  Future<void> searchCity(String city) async {
-    if (city.isEmpty) return;
-    
-    _setLoading(true);
-    _error = '';
-    
-    try {
-      final weather = await _weatherService.getWeatherByCity(city);
-      _currentWeather = weather;
-      _currentCity = city;
-      
-      // Get forecast data
-      _forecast = await _weatherService.getForecast(city);
-      
-      // Cache the weather data
-      await _storageService.saveWeatherData(city, weather);
-      
-      _setLoading(false);
-    } catch (e) {
-      _handleError('Error fetching weather for $city: $e');
-    }
+    loadFavorites();
   }
 
   Future<void> getCurrentLocationWeather() async {
     _setLoading(true);
     _error = '';
-    
+
     try {
-      // Check location permission in a non-blocking way
+      // Check location permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _handleError('Location permissions are denied');
+          _setError('Location permission denied');
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
-        _handleError('Location permissions are permanently denied');
+        _setError('Location permission permanently denied');
         return;
       }
-      
-      // Get current position with a timeout to prevent hanging
+
+      // Get current position
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low, // Lower accuracy for faster response
-        timeLimit: const Duration(seconds: 5), // Add timeout
-      ).catchError((e) {
-        throw Exception('Failed to get location: $e');
-      });
-      
-      // Get address from coordinates
-      try {
-        final placemarks = await placemarkFromCoordinates(
-          position.latitude, 
-          position.longitude,
-          localeIdentifier: 'en_US', // Add locale for consistent results
-        );
-        
-        if (placemarks.isNotEmpty) {
-          final place = placemarks.first;
-          _currentCity = place.locality ?? place.subAdministrativeArea ?? 'Unknown';
-        }
-      } catch (e) {
-        // If geocoding fails, use coordinates as fallback
-        _currentCity = '${position.latitude.toStringAsFixed(2)}, ${position.longitude.toStringAsFixed(2)}';
-      }
-      
-      // Get weather for location
-      final weather = await _weatherService.getWeatherByLocation(
-        position.latitude, 
-        position.longitude
+        desiredAccuracy: LocationAccuracy.high,
       );
-      
-      _currentWeather = weather;
-      
-      // Get forecast data - do this in a separate try-catch to avoid failing the whole method
-      try {
-        _forecast = await _weatherService.getForecast(_currentCity);
-      } catch (e) {
-        // If forecast fails, just leave it empty
-        _forecast = [];
+
+      // Get city name from coordinates
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final placemark = placemarks.first;
+        final city = placemark.locality ?? 'Unknown';
+        
+        // Get weather for the city
+        await searchCity(city);
+      } else {
+        _setError('Could not determine your location');
       }
+    } catch (e) {
+      _setError('Error getting current location: $e');
+    }
+  }
+
+  Future<void> searchCity(String city) async {
+    if (city.isEmpty) return;
+
+    _setLoading(true);
+    _error = '';
+
+    try {
+      // Get current weather
+      final weather = await _weatherService.getWeather(city);
       
-      // Cache the weather data
-      await _storageService.saveWeatherData(_currentCity, weather);
-      
+      // Get forecast
+      final forecast = await _weatherService.getForecast(city);
+
+      _currentWeather = weather;
+      _forecast = forecast;
+      _currentCity = city;
       _setLoading(false);
     } catch (e) {
-      _handleError('Error fetching weather for current location: $e');
+      _setError('Error searching for city: $e');
+    }
+  }
+
+  Future<void> loadFavorites() async {
+    _isLoadingFavorites = true;
+    notifyListeners();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _favorites = prefs.getStringList('favorites') ?? [];
+      _isLoadingFavorites = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading favorites: $e');
+      _isLoadingFavorites = false;
+      notifyListeners();
     }
   }
 
   Future<void> addToFavorites(String city) async {
-    await _storageService.addFavoriteCity(city);
-    _favoriteCities = await _storageService.getFavoriteCities();
-    notifyListeners();
+    if (city.isEmpty) return;
+
+    try {
+      if (!_favorites.contains(city)) {
+        _favorites.add(city);
+        await _saveFavorites();
+      }
+    } catch (e) {
+      debugPrint('Error adding to favorites: $e');
+    }
   }
 
   Future<void> removeFromFavorites(String city) async {
-    await _storageService.removeFavoriteCity(city);
-    _favoriteCities = await _storageService.getFavoriteCities();
-    notifyListeners();
+    try {
+      _favorites.remove(city);
+      await _saveFavorites();
+    } catch (e) {
+      debugPrint('Error removing from favorites: $e');
+    }
   }
 
   Future<bool> isCityFavorite(String city) async {
-    return await _storageService.isCityFavorite(city);
+    await loadFavorites();
+    return _favorites.contains(city);
   }
 
-  Future<void> loadCachedWeather(String city) async {
-    final cachedWeather = await _storageService.getCachedWeatherData(city);
-    if (cachedWeather != null) {
-      _currentWeather = cachedWeather;
-      _currentCity = city;
+  bool isCityInFavorites(String city) {
+    return _favorites.contains(city);
+  }
+
+  Future<void> _saveFavorites() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('favorites', _favorites);
       notifyListeners();
+    } catch (e) {
+      debugPrint('Error saving favorites: $e');
     }
   }
 
@@ -155,8 +156,8 @@ class WeatherProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _handleError(String errorMessage) {
-    _error = errorMessage;
+  void _setError(String error) {
+    _error = error;
     _isLoading = false;
     notifyListeners();
   }
