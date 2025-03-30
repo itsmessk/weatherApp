@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -24,47 +25,73 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return AppBar(
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-          foregroundColor: foregroundColor ?? theme.colorScheme.onPrimary,
-          shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black.withOpacity(0.3),
-              offset: const Offset(1, 1),
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: AppBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.wb_sunny,
+              color: Colors.amber,
+              size: 28,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+                foregroundColor: foregroundColor ?? Colors.white,
+                fontFamily: 'Montserrat',
+                shadows: [
+                  Shadow(
+                    blurRadius: 3.0,
+                    color: Colors.black.withOpacity(0.3),
+                    offset: const Offset(1, 1),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      ),
-      centerTitle: centerTitle,
-      backgroundColor: backgroundColor ?? theme.colorScheme.primary,
-      foregroundColor: foregroundColor ?? theme.colorScheme.onPrimary,
-      elevation: elevation,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(16),
-        ),
-      ),
-      actions: actions,
-      leading: leading,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary,
-              theme.colorScheme.primary.withBlue(
-                (theme.colorScheme.primary.blue + 30).clamp(0, 255),
-              ),
-            ],
+        centerTitle: centerTitle,
+        backgroundColor: Colors.transparent,
+        foregroundColor: foregroundColor ?? Colors.white,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(20),
           ),
         ),
+        actions: actions,
+        leading: leading,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1565C0),
+                Color(0xFF0D47A1),
+              ],
+              stops: const [0.3, 1.0],
+            ),
+          ),
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
     );
   }
