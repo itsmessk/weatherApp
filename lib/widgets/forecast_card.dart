@@ -4,11 +4,11 @@ import '../models/weather.dart';
 import 'weather_icon.dart';
 
 class ForecastCard extends StatelessWidget {
-  final Weather weather;
+  final Weather forecast;
 
   const ForecastCard({
     Key? key,
-    required this.weather,
+    required this.forecast,
   }) : super(key: key);
 
   @override
@@ -24,19 +24,19 @@ class ForecastCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              DateFormat('E, MMM d').format(weather.lastUpdated),
+              DateFormat('E, MMM d').format(forecast.lastUpdated),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             WeatherIcon(
-              condition: weather.condition,
+              condition: forecast.condition,
               size: 40,
             ),
             const SizedBox(height: 8),
             Text(
-              '${weather.temperature.toStringAsFixed(1)}°C',
+              '${forecast.temperature.toStringAsFixed(1)}°C',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -44,7 +44,7 @@ class ForecastCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              weather.condition,
+              forecast.condition,
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).textTheme.bodySmall?.color,

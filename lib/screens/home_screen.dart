@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       return Padding(
                                         padding: const EdgeInsets.only(right: 8.0),
                                         child: ForecastCard(
-                                          weather: weatherProvider.forecast[index],
+                                          forecast: weatherProvider.forecast[index],
                                         ),
                                       );
                                     },
