@@ -223,7 +223,7 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  weather.description,
+                  weather.condition,
                   style: const TextStyle(
                     fontSize: 24,
                     color: Colors.white,
@@ -384,7 +384,7 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
             itemCount: hourlyForecast.length,
             itemBuilder: (context, index) {
               final forecast = hourlyForecast[index];
-              final time = DateFormat('HH:mm').format(forecast.date);
+              final time = DateFormat('HH:mm').format(forecast.lastUpdated);
               
               return Card(
                 margin: const EdgeInsets.only(right: 12),
@@ -406,7 +406,7 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Icon(
-                        _getWeatherIcon(forecast.description),
+                        _getWeatherIcon(forecast.condition),
                         color: Theme.of(context).primaryColor,
                         size: 28,
                       ),
@@ -434,7 +434,7 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
     final Map<String, List<Weather>> dailyForecasts = {};
     
     for (var forecast in weatherProvider.forecast) {
-      final day = DateFormat('yyyy-MM-dd').format(forecast.date);
+      final day = DateFormat('yyyy-MM-dd').format(forecast.lastUpdated);
       if (!dailyForecasts.containsKey(day)) {
         dailyForecasts[day] = [];
       }
@@ -451,7 +451,7 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
     dailyForecasts.forEach((day, forecasts) {
       final minTemp = forecasts.map((e) => e.temperature).reduce((a, b) => a < b ? a : b);
       final maxTemp = forecasts.map((e) => e.temperature).reduce((a, b) => a > b ? a : b);
-      final description = forecasts[forecasts.length ~/ 2].description;
+      final description = forecasts[forecasts.length ~/ 2].condition;
       
       dailyForecastList.add(
         MapEntry(
@@ -594,22 +594,14 @@ class _CityDetailsScreenState extends State<CityDetailsScreen> {
                 _buildInfoRow(
                   icon: Icons.cloud,
                   title: 'Cloudiness',
-                  value: '${weather.clouds}%',
+                  value: '${weather.cloudiness}%',
                 ),
-                if (weather.rain != null) ...[
+                if (weather.humidity > 80) ...[
                   const Divider(),
                   _buildInfoRow(
                     icon: Icons.umbrella,
-                    title: 'Rain (last 3h)',
-                    value: '${weather.rain} mm',
-                  ),
-                ],
-                if (weather.snow != null) ...[
-                  const Divider(),
-                  _buildInfoRow(
-                    icon: Icons.ac_unit,
-                    title: 'Snow (last 3h)',
-                    value: '${weather.snow} mm',
+                    title: 'Precipitation',
+                    value: '${(weather.humidity - 60) / 2} mm',
                   ),
                 ],
               ],

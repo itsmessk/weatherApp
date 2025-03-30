@@ -218,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       return Padding(
                                         padding: const EdgeInsets.only(right: 8.0),
                                         child: ForecastCard(
-                                          forecast: weatherProvider.forecast[index],
+                                          weather: weatherProvider.forecast[index],
                                         ),
                                       );
                                     },
@@ -327,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   // Weather insights section
-  Widget _buildWeatherInsights(Weather weather) {
+  Widget _buildWeatherInsights(dynamic weather) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
